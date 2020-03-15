@@ -37,6 +37,7 @@
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
+#include "rtes_10_1.h"
 
 //*****************************************************************************
 //
@@ -140,9 +141,7 @@ LEDTask(void *pvParameters)
                 // Guard UART from concurrent access. Print the currently
                 // blinking LED.
                 //
-                xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-                UARTprintf("Led %d is blinking. [R, G, B]\n", g_ui8ColorsIndx);
-                xSemaphoreGive(g_pUARTSemaphore);
+                UARTPRINTF("Led %d is blinking. [R, G, B]\n", g_ui8ColorsIndx);
             }
 
             //
@@ -160,10 +159,8 @@ LEDTask(void *pvParameters)
                 // Guard UART from concurrent access. Print the currently
                 // blinking frequency.
                 //
-                xSemaphoreTake(g_pUARTSemaphore, portMAX_DELAY);
-                UARTprintf("Led blinking frequency is %d ms.\n",
+                UARTPRINTF("Led blinking frequency is %d ms.\n",
                            (ui32LEDToggleDelay * 2));
-                xSemaphoreGive(g_pUARTSemaphore);
             }
         }
 
