@@ -40,3 +40,4 @@ Release/
 *.exe
 *.out
 *.app
+/.metadata/
