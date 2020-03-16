@@ -43,7 +43,6 @@
 #include "semphr.h"
 #include "rtes_10_1.h"
 
-#define PERIOD2 (4000000)
 //*****************************************************************************
 //
 // The error routine that is called if the driver library encounters an error.
