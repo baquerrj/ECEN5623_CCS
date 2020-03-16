@@ -25,5 +25,7 @@ xSemaphoreHandle g_pTaskSemaphore;
     UARTprintf( fmt, ##__VA_ARGS__ ); \
     xSemaphoreGive( g_pUARTSemaphore )
 
+unsigned int _10MsIterations;
+unsigned int _40MsIterations;
 
 #endif /* RTES_10_2_H_ */

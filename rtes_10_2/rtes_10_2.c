@@ -108,20 +108,25 @@ void ConfigureUART( void )
    UARTStdioConfig( 0, 115200, 16000000 );
 }
 
-void calculateFibonacciNumbers( uint32_t terms )
+void calculateFibonacciNumbers( uint32_t terms, uint32_t iterations )
 {
    uint32_t n1 = 0;
    uint32_t n2 = 1;
    uint32_t i = 0;
+   uint32_t j = 0;
    uint32_t nextTerm = 0;
-   for ( i = 1; i < terms; ++i )
+
+   for ( i = 0; i < iterations; ++i )
    {
-      UARTPRINTF( "%d, ", n1 );
       nextTerm = n1 + n2;
-      n1 = n2;
-      n2 = nextTerm;
+      while ( j < terms )
+      {
+         n1 = n2;
+         n2 = nextTerm;
+         nextTerm = n1 + n2;
+         j++;
+      }
    }
-   UARTPRINTF( "\n" );
 }
 
 //*****************************************************************************
@@ -142,11 +147,26 @@ int main( void )
    //
    ConfigureUART();
 
+   ROM_SysCtlPeripheralEnable( SYSCTL_PERIPH_TIMER0 );
+
+   // Enable processor interrupts
+   ROM_IntMasterEnable();
+
+   // Timer Configuration
+   ROM_TimerConfigure( TIMER0_BASE, TIMER_CFG_PERIODIC );
+
+   ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, ROM_SysCtlClockGet() * 4 );
+
+   // Timer Enable
+   ROM_TimerEnable( TIMER0_BASE, TIMER_A );
+
    //
    // Print demo introduction.
    //
    UARTprintf( "\n\nRTES Problem 10.2 on EK-TM4C123GXL\n" );
 
+   _10MsIterations =  49600;
+   _40MsIterations = 199000;
    //
    // Create a mutex to guard the UART.
    //

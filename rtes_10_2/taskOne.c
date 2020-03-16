@@ -28,33 +28,58 @@
 
 extern xSemaphoreHandle g_pUARTSemaphore;
 extern xSemaphoreHandle g_pTaskSemaphore;
-extern void calculateFibonacciNumbers( uint32_t terms );
+extern void calculateFibonacciNumbers( uint32_t terms, uint32_t iterations );
+extern unsigned int _10MsIterations;
 
+#if 1
 static void taskOne( void *pvParameters )
 {
    int32_t processingTicks = 0;
    portTickType wakeTick = 0;
    portTickType doneTick = 0;
+   uint32_t seqIterations = 50;
 
    while ( 1 )
    {
       xSemaphoreTake( g_pTaskSemaphore, portMAX_DELAY );
+      UARTPRINTF( "\n***** TASK T1 *****\n" );
       wakeTick = xTaskGetTickCount();
-      UARTPRINTF( "\n***** TASK ONE *****\n" );
-      calculateFibonacciNumbers( 22 );
+      calculateFibonacciNumbers( seqIterations, _10MsIterations );
       doneTick = xTaskGetTickCount();
       processingTicks = doneTick - wakeTick;
-      UARTPRINTF( "TASK ONE: done after %d ticks, %d ms\n", processingTicks, processingTicks / portTICK_PERIOD_MS );
+      UARTPRINTF( "TASK T1: %d ticks - %d ms\n", processingTicks, processingTicks / portTICK_PERIOD_MS );
       xSemaphoreGive( g_pTaskSemaphore );
       taskYIELD();
    }
    vTaskDelete( NULL );
 }
+#else
+static void taskOne( void *pvParameters )
+{
+   int32_t processingTicks = 0;
+   uint32_t wakeTick = 0;
+   uint32_t doneTick = 0;
+   unsigned int seqIterations = 50;
+   while ( 1 )
+   {
+      xSemaphoreTake( g_pTaskSemaphore, portMAX_DELAY );
+      UARTPRINTF( "\n***** TASK T1 *****\n" );
+      wakeTick = TimerValueGet( TIMER0_BASE, TIMER_A );
+      calculateFibonacciNumbers( seqIterations, _10MsIterations );
+      doneTick = TimerValueGet( TIMER0_BASE, TIMER_A );
+      processingTicks = wakeTick - doneTick;
+      UARTPRINTF( "TASK T1: %d ticks - %d ms\n", processingTicks, processingTicks / 50000 );
+      xSemaphoreGive( g_pTaskSemaphore );
+      taskYIELD();
+   }
+   vTaskDelete( NULL );
+}
+#endif
 
 uint32_t TaskOneInit( void )
 {
    if ( xTaskCreate( taskOne,
-         (const portCHAR *)"TaskOne",
+         (const portCHAR *)"T1",
          TASKONESTACKSIZE,
          NULL,
          tskIDLE_PRIORITY + PRIORITY_TASK_ONE,
