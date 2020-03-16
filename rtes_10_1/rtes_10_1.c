@@ -131,34 +131,34 @@ int main( void )
    // Set the clocking to run at 50 MHz from the PLL.
    //
    ROM_SysCtlClockSet( SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ |
-                       SYSCTL_OSC_MAIN );
+   SYSCTL_OSC_MAIN );
 
    //
    // Initialize the UART and configure it for 115,200, 8-N-1 operation.
    //
    ConfigureUART();
 
-   ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
+   ROM_SysCtlPeripheralEnable( SYSCTL_PERIPH_TIMER0 );
 
    // Enable processor interrupts
    ROM_IntMasterEnable();
 
    // Timer Configuration
 
-   ROM_TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
+   ROM_TimerConfigure( TIMER0_BASE, TIMER_CFG_PERIODIC );
 
-   ROM_TimerLoadSet(TIMER0_BASE, TIMER_A, ROM_SysCtlClockGet());
+   ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, ROM_SysCtlClockGet() );
    //ROM_TimerLoadSet(TIMER0_BASE, TIMER_A, PERIOD2);
 
    //ROM_TimerLoadSet(TIMER1_BASE, TIMER_A, ROM_SysCtlClockGet() / 2);
 
    // Setup the interrupts for the timer timeouts.
-   ROM_IntEnable(INT_TIMER0A); //Timer 0 Enable
+   ROM_IntEnable( INT_TIMER0A ); //Timer 0 Enable
 
-   ROM_TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT); //Timer 0 in Periodic mode
+   ROM_TimerIntEnable( TIMER0_BASE, TIMER_TIMA_TIMEOUT ); //Timer 0 in Periodic mode
 
    // Timer Enable
-   ROM_TimerEnable(TIMER0_BASE, TIMER_A);
+   ROM_TimerEnable( TIMER0_BASE, TIMER_A );
 
    //
    // Print demo introduction.
@@ -175,9 +175,9 @@ int main( void )
 
    if ( ProcessingTaskInit() != 0 )
    {
-       while ( 1 )
-       {
-       }
+      while ( 1 )
+      {
+      }
    }
 
    //

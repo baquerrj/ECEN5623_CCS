@@ -10,7 +10,6 @@
 
 #include "semphr.h"
 
-
 //*****************************************************************************
 //
 // The mutex that protects concurrent access of UART from multiple tasks.
@@ -26,6 +25,5 @@ portTickType g_wakeTick;
 #define UARTPRINTF( fmt, ... ) xSemaphoreTake( g_pUARTSemaphore, portMAX_DELAY );\
     UARTprintf( fmt, ##__VA_ARGS__ ); \
     xSemaphoreGive( g_pUARTSemaphore )
-
 
 #endif /* RTES_10_1_H_ */
