@@ -18,7 +18,6 @@
 #include "driverlib/timer.h"
 #include "utils/uartstdio.h"
 #include "processingTask.h"
-#include "led_task.h"
 #include "priorities.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -30,24 +29,22 @@
 
 extern xSemaphoreHandle g_pUARTSemaphore;
 extern xSemaphoreHandle g_pTaskSemaphore;
+extern portTickType g_wakeTick;
 
 static void processingTask( void *pvParameters )
 {
-    uint32_t timer1val = 0;
-    uint32_t count = 0;
     int32_t  difference = 0;
+    //portTickType wakeTime = 0;
+    portTickType lastWakeTime = 0;
+
     while ( 1 )
     {
         UARTPRINTF( "Waiting for task semaphore\n" );
-
-        timer1val = TimerValueGet( TIMER1_BASE, TIMER_A );
-        difference = count - timer1val;
-        if( difference < 0 )
-        {
-            difference = -1 * (difference - 100000000);
-        }
-        UARTPRINTF( "Got Task Semaphore after %d Clock Cycles\n", difference );
-        count = timer1val;
+        //wakeTime = xTaskGetTickCount();
+        xSemaphoreTake( g_pTaskSemaphore, portMAX_DELAY );
+        difference = g_wakeTick - lastWakeTime;
+        UARTPRINTF( "Got Task Semaphore after %d ticks, %d ms\n", difference, difference / portTICK_PERIOD_MS  );
+        lastWakeTime = g_wakeTick;
     }
     vTaskDelete( NULL );
 }

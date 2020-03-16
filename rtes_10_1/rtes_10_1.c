@@ -26,30 +26,24 @@
 #include <stdint.h>
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
+#include "inc/hw_ints.h"
+#include "driverlib/interrupt.h"
+#include "driverlib/timer.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pin_map.h"
 #include "driverlib/rom.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 #include "utils/uartstdio.h"
-#include "led_task.h"
-#include "switch_task.h"
+#include "processingTask.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
+#include "rtes_10_1.h"
 
-
-//*****************************************************************************
-//
-// The mutex that protects concurrent access of UART from multiple tasks.
-//
-//*****************************************************************************
-xSemaphoreHandle g_pUARTSemaphore;
-
-// Semaphore used to signal processing task from ISR
-xSemaphoreHandle g_pTaskSemaphore;
-
+#define PERIOD2 (4000000)
 //*****************************************************************************
 //
 // The error routine that is called if the driver library encounters an error.
@@ -117,13 +111,15 @@ void ConfigureUART( void )
 //*****************************************************************************
 // Interrupt Handler for Timer ISR
 //*****************************************************************************
-void InterruptHandler( void )
+void Timer0InterruptHandler( void )
 {
    // Clear the interrupt
    ROM_TimerIntClear( TIMER0_BASE, TIMER_TIMA_TIMEOUT );
    UARTprintf( "Signaling Processing Task from ISR\n" );
+   g_wakeTick = xTaskGetTickCountFromISR();
    xSemaphoreGive( g_pTaskSemaphore );
 }
+
 //*****************************************************************************
 //
 // Initialize FreeRTOS and start the initial set of tasks.
@@ -142,6 +138,28 @@ int main( void )
    //
    ConfigureUART();
 
+   ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
+
+   // Enable processor interrupts
+   ROM_IntMasterEnable();
+
+   // Timer Configuration
+
+   ROM_TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
+
+   ROM_TimerLoadSet(TIMER0_BASE, TIMER_A, ROM_SysCtlClockGet());
+   //ROM_TimerLoadSet(TIMER0_BASE, TIMER_A, PERIOD2);
+
+   //ROM_TimerLoadSet(TIMER1_BASE, TIMER_A, ROM_SysCtlClockGet() / 2);
+
+   // Setup the interrupts for the timer timeouts.
+   ROM_IntEnable(INT_TIMER0A); //Timer 0 Enable
+
+   ROM_TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT); //Timer 0 in Periodic mode
+
+   // Timer Enable
+   ROM_TimerEnable(TIMER0_BASE, TIMER_A);
+
    //
    // Print demo introduction.
    //
@@ -153,26 +171,13 @@ int main( void )
    g_pUARTSemaphore = xSemaphoreCreateMutex();
 
    // Create a binary semaphore for task signaling
-   g_pTaskSemaphore = xSemaphoreCreateBinary();
+   g_pTaskSemaphore = xSemaphoreCreateMutex();
 
-   //
-   // Create the LED task.
-   //
-   if ( LEDTaskInit() != 0 )
+   if ( ProcessingTaskInit() != 0 )
    {
-      while ( 1 )
-      {
-      }
-   }
-
-   //
-   // Create the switch task.
-   //
-   if ( SwitchTaskInit() != 0 )
-   {
-      while ( 1 )
-      {
-      }
+       while ( 1 )
+       {
+       }
    }
 
    //
