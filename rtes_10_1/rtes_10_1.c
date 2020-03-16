@@ -113,11 +113,21 @@ void ConfigureUART( void )
 //*****************************************************************************
 void Timer0InterruptHandler( void )
 {
+   BaseType_t xHigherPriorityTaskWoken;
+   // Get the current system tick
+   g_wakeTick = xTaskGetTickCountFromISR();
+
    // Clear the interrupt
    ROM_TimerIntClear( TIMER0_BASE, TIMER_TIMA_TIMEOUT );
+
+   // Set xHigherPriorityTaskWoken to pdFALSE - will be set to pdTRUE if a
+   // context switch is required
+   xHigherPriorityTaskWoken = pdFALSE;
+
    UARTprintf( "Signaling Processing Task from ISR\n" );
-   g_wakeTick = xTaskGetTickCountFromISR();
-   xSemaphoreGive( g_pTaskSemaphore );
+
+   // Give the semaphore
+   xSemaphoreGiveFromISR( g_pTaskSemaphore, &xHigherPriorityTaskWoken );
 }
 
 //*****************************************************************************
@@ -144,17 +154,14 @@ int main( void )
    ROM_IntMasterEnable();
 
    // Timer Configuration
-
    ROM_TimerConfigure( TIMER0_BASE, TIMER_CFG_PERIODIC );
 
    ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, ROM_SysCtlClockGet() );
-   //ROM_TimerLoadSet(TIMER0_BASE, TIMER_A, PERIOD2);
 
-   //ROM_TimerLoadSet(TIMER1_BASE, TIMER_A, ROM_SysCtlClockGet() / 2);
+   // Enable interrupts from TIMER0
+   ROM_IntEnable( INT_TIMER0A );
 
-   // Setup the interrupts for the timer timeouts.
-   ROM_IntEnable( INT_TIMER0A ); //Timer 0 Enable
-
+   // Enable timeout timer interrupt for TIMER0
    ROM_TimerIntEnable( TIMER0_BASE, TIMER_TIMA_TIMEOUT ); //Timer 0 in Periodic mode
 
    // Timer Enable
@@ -163,7 +170,7 @@ int main( void )
    //
    // Print demo introduction.
    //
-   UARTprintf( "\n\nWelcome to the EK-TM4C123GXL FreeRTOS Demo!\n" );
+   UARTprintf( "\n\nRTES Problem 10.1 on EK-TM4C123GXL\n" );
 
    //
    // Create a mutex to guard the UART.
@@ -171,7 +178,7 @@ int main( void )
    g_pUARTSemaphore = xSemaphoreCreateMutex();
 
    // Create a binary semaphore for task signaling
-   g_pTaskSemaphore = xSemaphoreCreateMutex();
+   g_pTaskSemaphore = xSemaphoreCreateBinary();
 
    if ( ProcessingTaskInit() != 0 )
    {

@@ -34,13 +34,14 @@ static void processingTask( void *pvParameters )
 {
    int32_t difference = 0;
    portTickType lastWakeTime = 0;
-
+   portTickType currentTick = 0;
    while ( 1 )
    {
-      UARTPRINTF( "Waiting for task semaphore\n" );
+      currentTick = xTaskGetTickCount();
+      UARTPRINTF( "Waiting for semaphore at %d ticks, %d ms\n", currentTick, currentTick / portTICK_PERIOD_MS );
       xSemaphoreTake( g_pTaskSemaphore, portMAX_DELAY );
       difference = g_wakeTick - lastWakeTime;
-      UARTPRINTF( "Got Task Semaphore after %d ticks, %d ms\n", difference, difference / portTICK_PERIOD_MS );
+      UARTPRINTF( "PROC TASK: got semaphore after %d ticks, %d ms\n", difference, difference / portTICK_PERIOD_MS );
       lastWakeTime = g_wakeTick;
    }
    vTaskDelete( NULL );
