@@ -5,7 +5,6 @@
  *      Author: baquerrj
  */
 
-#include "processingTask.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include "FreeRTOS.h"
@@ -23,6 +22,7 @@
 #include "semphr.h"
 #include "task.h"
 #include "utils/uartstdio.h"
+#include "processingTask.h"
 
 #define PROCESSINGTASKSTACKSIZE 128  // Stack size in words
 
