@@ -108,16 +108,20 @@ void ConfigureUART( void )
    UARTStdioConfig( 0, 115200, 16000000 );
 }
 
-//*****************************************************************************
-// Interrupt Handler for Timer ISR
-//*****************************************************************************
-void Timer0InterruptHandler( void )
+void calculateFibonacciNumbers( uint32_t terms )
 {
-   // Clear the interrupt
-   ROM_TimerIntClear( TIMER0_BASE, TIMER_TIMA_TIMEOUT );
-   UARTprintf( "Signaling Processing Task from ISR\n" );
-   g_wakeTick = xTaskGetTickCountFromISR();
-   xSemaphoreGive( g_pTaskSemaphore );
+   uint32_t n1 = 0;
+   uint32_t n2 = 1;
+   uint32_t i = 0;
+   uint32_t nextTerm = 0;
+   for ( i = 1; i < terms; ++i )
+   {
+      UARTPRINTF( "%d, ", n1 );
+      nextTerm = n1 + n2;
+      n1 = n2;
+      n2 = nextTerm;
+   }
+   UARTPRINTF( "\n" );
 }
 
 //*****************************************************************************
@@ -138,31 +142,10 @@ int main( void )
    //
    ConfigureUART();
 
-#if 0
-   ROM_SysCtlPeripheralEnable( SYSCTL_PERIPH_TIMER0 );
-
-   // Enable processor interrupts
-   ROM_IntMasterEnable();
-
-   // Timer Configuration
-
-   ROM_TimerConfigure( TIMER0_BASE, TIMER_CFG_PERIODIC );
-
-   ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, ROM_SysCtlClockGet() );
-
-   // Setup the interrupts for the timer timeouts.
-   ROM_IntEnable( INT_TIMER0A ); //Timer 0 Enable
-
-   ROM_TimerIntEnable( TIMER0_BASE, TIMER_TIMA_TIMEOUT ); //Timer 0 in Periodic mode
-
-   // Timer Enable
-   ROM_TimerEnable( TIMER0_BASE, TIMER_A );
-#endif
-
    //
    // Print demo introduction.
    //
-   UARTprintf( "\n\nWelcome to the EK-TM4C123GXL FreeRTOS Demo!\n" );
+   UARTprintf( "\n\nRTES Problem 10.2 on EK-TM4C123GXL\n" );
 
    //
    // Create a mutex to guard the UART.
@@ -170,8 +153,13 @@ int main( void )
    g_pUARTSemaphore = xSemaphoreCreateMutex();
 
    // Create a binary semaphore for task signaling
-   g_pTaskSemaphore = xSemaphoreCreateMutex();
+   g_pTaskSemaphore = xSemaphoreCreateBinary();
 
+   if( NULL != g_pTaskSemaphore )
+   {
+       // do an initial give
+       xSemaphoreGive( g_pTaskSemaphore );
+   }
    if ( TaskOneInit() != 0 )
    {
       while ( 1 )

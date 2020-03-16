@@ -28,45 +28,25 @@
 
 extern xSemaphoreHandle g_pUARTSemaphore;
 extern xSemaphoreHandle g_pTaskSemaphore;
-extern portTickType g_wakeTick;
-
-static void calculateFibonacciNumbers( uint32_t terms )
-{
-   uint32_t n1 = 0;
-   uint32_t n2 = 1;
-   uint32_t i = 0;
-   uint32_t nextTerm = 0;
-   for ( i = 1; i < terms; ++i )
-   {
-      UARTPRINTF( "%d, ", n1 );
-      nextTerm = n1 + n2;
-      n1 = n2;
-      n2 = nextTerm;
-   }
-   UARTPRINTF( "\n" );
-}
+extern void calculateFibonacciNumbers( uint32_t terms );
 
 static void taskOne( void *pvParameters )
 {
-   int32_t ticksBetweenWaking = 0;
    int32_t processingTicks = 0;
    portTickType wakeTick = 0;
-   portTickType lastWakeTick = 0;
    portTickType doneTick = 0;
 
    while ( 1 )
    {
-      //UARTPRINTF( "Waiting for task semaphore\n" );
       xSemaphoreTake( g_pTaskSemaphore, portMAX_DELAY );
       wakeTick = xTaskGetTickCount();
-      ticksBetweenWaking = wakeTick - lastWakeTick;
-      calculateFibonacciNumbers( 13 );
-      //UARTPRINTF( "Task One Woke Up after %d ticks, %d ms\n", ticksBetweenWaking, ticksBetweenWaking / portTICK_PERIOD_MS );
+      UARTPRINTF( "\n***** TASK ONE *****\n" );
+      calculateFibonacciNumbers( 22 );
       doneTick = xTaskGetTickCount();
       processingTicks = doneTick - wakeTick;
-      UARTPRINTF( "Task One Done after %d ticks, %d ms\n", processingTicks, processingTicks / portTICK_PERIOD_MS );
-      lastWakeTick = wakeTick;
+      UARTPRINTF( "TASK ONE: done after %d ticks, %d ms\n", processingTicks, processingTicks / portTICK_PERIOD_MS );
       xSemaphoreGive( g_pTaskSemaphore );
+      taskYIELD();
    }
    vTaskDelete( NULL );
 }
