@@ -30,8 +30,7 @@
 // The priorities of the various tasks.
 //
 //*****************************************************************************
-#define PRIORITY_SWITCH_TASK     2
-#define PRIORITY_LED_TASK        1
-#define PRIORITY_PROCESSING_TASK 1
+#define PRIORITY_TASK_ONE 1
+#define PRIORITY_TASK_TWO 1
 
 #endif // __PRIORITIES_H__

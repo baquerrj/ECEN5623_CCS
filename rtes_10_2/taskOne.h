@@ -1,13 +1,13 @@
 /*
- * processingTask.h
+ * taskOne.h
  *
  *  Created on: Mar 15, 2020
  *      Author: baquerrj
  */
 
-#ifndef PROCESSINGTASK_H_
-#define PROCESSINGTASK_H_
+#ifndef TASKONE_H
+#define TASKONE_H
 
-extern uint32_t ProcessingTaskInit( void );
+extern uint32_t TaskOneInit( void );
 
-#endif /* PROCESSINGTASK_H_ */
+#endif /* TASKONE_H */

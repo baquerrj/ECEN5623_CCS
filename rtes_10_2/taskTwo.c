@@ -1,5 +1,5 @@
 /*
- * taskOne.c
+ * taskTwo.c
  *
  *  Created on: Mar 15, 2020
  *      Author: baquerrj
@@ -16,7 +16,7 @@
 #include "drivers/buttons.h"
 #include "driverlib/timer.h"
 #include "utils/uartstdio.h"
-#include "taskOne.h"
+#include "taskTwo.h"
 #include "priorities.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -24,7 +24,7 @@
 #include "semphr.h"
 #include "rtes_10_2.h"
 
-#define TASKONESTACKSIZE        128         // Stack size in words
+#define TASKTWOSTACKSIZE        128         // Stack size in words
 
 extern xSemaphoreHandle g_pUARTSemaphore;
 extern xSemaphoreHandle g_pTaskSemaphore;
@@ -46,7 +46,7 @@ static void calculateFibonacciNumbers( uint32_t terms )
    UARTPRINTF( "\n" );
 }
 
-static void taskOne( void *pvParameters )
+static void taskTwo( void *pvParameters )
 {
    int32_t ticksBetweenWaking = 0;
    int32_t processingTicks = 0;
@@ -60,24 +60,24 @@ static void taskOne( void *pvParameters )
       xSemaphoreTake( g_pTaskSemaphore, portMAX_DELAY );
       wakeTick = xTaskGetTickCount();
       ticksBetweenWaking = wakeTick - lastWakeTick;
-      calculateFibonacciNumbers( 13 );
-      //UARTPRINTF( "Task One Woke Up after %d ticks, %d ms\n", ticksBetweenWaking, ticksBetweenWaking / portTICK_PERIOD_MS );
+      calculateFibonacciNumbers( 35 );
+      //UARTPRINTF( "Task Two Woke Up after %d ticks, %d ms\n", ticksBetweenWaking, ticksBetweenWaking / portTICK_PERIOD_MS );
       doneTick = xTaskGetTickCount();
       processingTicks = doneTick - wakeTick;
-      UARTPRINTF( "Task One Done after %d ticks, %d ms\n", processingTicks, processingTicks / portTICK_PERIOD_MS );
+      UARTPRINTF( "Task Two Done after %d ticks, %d ms\n", processingTicks, processingTicks / portTICK_PERIOD_MS );
       lastWakeTick = wakeTick;
       xSemaphoreGive( g_pTaskSemaphore );
    }
    vTaskDelete( NULL );
 }
 
-uint32_t TaskOneInit( void )
+uint32_t TaskTwoInit( void )
 {
-   if ( xTaskCreate( taskOne,
-         (const portCHAR *)"TaskOne",
-         TASKONESTACKSIZE,
+   if ( xTaskCreate( taskTwo,
+         (const portCHAR *)"TaskTwo",
+         TASKTWOSTACKSIZE,
          NULL,
-         tskIDLE_PRIORITY + PRIORITY_TASK_ONE,
+         tskIDLE_PRIORITY + PRIORITY_TASK_TWO,
          NULL) != pdTRUE )
    {
       return 1;
