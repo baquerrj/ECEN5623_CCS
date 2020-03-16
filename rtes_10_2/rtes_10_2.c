@@ -35,7 +35,6 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 #include "utils/uartstdio.h"
-#include "led_task.h"
 #include "processingTask.h"
 
 #include "FreeRTOS.h"
