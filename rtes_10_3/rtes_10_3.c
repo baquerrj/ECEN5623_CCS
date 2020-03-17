@@ -73,6 +73,7 @@ void vApplicationStackOverflowHook( xTaskHandle *pxTask, char *pcTaskName )
    }
 }
 
+//#define ISR_TIMING
 //*****************************************************************************
 // Interrupt Handler for Timer ISR
 //*****************************************************************************
@@ -81,15 +82,18 @@ void Timer0InterruptHandler( void )
    static uint32_t count = 0;
 
    BaseType_t xHigherPriorityTaskWoken;
+#ifdef ISR_TIMING
    // Get the current system tick
    g_wakeTick = xTaskGetTickCountFromISR();
-
    portTickType elapsed = 0;
 
    elapsed = g_wakeTick - g_lastWakeTick;
    UARTprintf( "\nISR: time elapsed %d ticks, %d ms\n", elapsed, elapsed / portTICK_PERIOD_MS );
    g_lastWakeTick = g_wakeTick;
 
+   // Clear the interrupt
+   ROM_TimerIntClear( TIMER0_BASE, TIMER_TIMA_TIMEOUT );
+#else
    // Clear the interrupt
    ROM_TimerIntClear( TIMER0_BASE, TIMER_TIMA_TIMEOUT );
 
@@ -101,11 +105,13 @@ void Timer0InterruptHandler( void )
    {
       xSemaphoreGiveFromISR( g_p30MsTaskSemaphore, &xHigherPriorityTaskWoken );
    }
-   else if( count % 8 == 0 )
+   else if ( count % 8 == 0 )
    {
       xSemaphoreGiveFromISR( g_p80MsTaskSemaphore, &xHigherPriorityTaskWoken );
    }
 
+   portYIELD_FROM_ISR( &xHigherPriorityTaskWoken );
+#endif
    count++;
 }
 
@@ -144,20 +150,25 @@ void ConfigureUART( void )
    UARTStdioConfig( 0, 115200, 16000000 );
 }
 
-void calculateFibonacciNumbers( uint32_t terms )
+void calculateFibonacciNumbers( uint32_t terms, uint32_t iterations )
 {
    uint32_t n1 = 0;
    uint32_t n2 = 1;
    uint32_t i = 0;
+   uint32_t j = 0;
    uint32_t nextTerm = 0;
-   for ( i = 1; i < terms; ++i )
+
+   for ( i = 0; i < iterations; ++i )
    {
-      UARTPRINTF( "%d, ", n1 );
       nextTerm = n1 + n2;
-      n1 = n2;
-      n2 = nextTerm;
+      while ( j < terms )
+      {
+         n1 = n2;
+         n2 = nextTerm;
+         nextTerm = n1 + n2;
+         j++;
+      }
    }
-   UARTPRINTF( "\n" );
 }
 
 //*****************************************************************************
@@ -170,8 +181,7 @@ int main( void )
    //
    // Set the clocking to run at 50 MHz from the PLL.
    //
-   ROM_SysCtlClockSet( SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ |
-   SYSCTL_OSC_MAIN );
+   SysCtlClockSet( SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ | SYSCTL_OSC_MAIN );
 
    //
    // Initialize the UART and configure it for 115,200, 8-N-1 operation.
@@ -185,8 +195,10 @@ int main( void )
 
    // Timer Configuration
    ROM_TimerConfigure( TIMER0_BASE, TIMER_CFG_PERIODIC );
+   uint32_t period = ROM_SysCtlClockGet() / 100;
+   ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, period - 1 );
 
-   ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, ROM_SysCtlClockGet() / 100 );
+   UARTprintf( "ROM_SysCtlClockGet() = %d\n", ROM_SysCtlClockGet() );
 
    // Enable interrupts from TIMER0
    ROM_IntEnable( INT_TIMER0A );
@@ -196,7 +208,6 @@ int main( void )
 
    // Timer Enable
    ROM_TimerEnable( TIMER0_BASE, TIMER_A );
-
    //
    // Print demo introduction.
    //
@@ -204,6 +215,9 @@ int main( void )
 
    g_lastWakeTick = 0;
    g_wakeTick = 0;
+
+   _10MsIterations = 49600;
+   _40MsIterations = 199000;
    //
    // Create a mutex to guard the UART.
    //

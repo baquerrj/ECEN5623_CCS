@@ -30,7 +30,7 @@
 // The priorities of the various tasks.
 //
 //*****************************************************************************
-#define PRIORITY_TASK_ONE 1
-#define PRIORITY_TASK_TWO 1
+#define PRIORITY_TASK_ONE 2   // 30ms task
+#define PRIORITY_TASK_TWO 1   // 80ms task
 
 #endif // __PRIORITIES_H__

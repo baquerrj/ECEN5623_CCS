@@ -30,5 +30,7 @@ portTickType g_lastWakeTick;
     UARTprintf( fmt, ##__VA_ARGS__ ); \
     xSemaphoreGive( g_pUARTSemaphore )
 
+unsigned int _10MsIterations;
+unsigned int _40MsIterations;
 
 #endif /* RTES_10_3_H_ */

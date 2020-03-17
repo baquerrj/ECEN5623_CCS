@@ -27,26 +27,27 @@
 #define TASKONESTACKSIZE        128         // Stack size in words
 
 extern xSemaphoreHandle g_pUARTSemaphore;
-extern xSemaphoreHandle g_pTaskSemaphore;
-extern void calculateFibonacciNumbers( uint32_t terms );
+extern xSemaphoreHandle g_p30MsTaskSemaphore;
+extern void calculateFibonacciNumbers( uint32_t terms, uint32_t iterations );
+extern unsigned int _10MsIterations;
 
 static void taskOne( void *pvParameters )
 {
    int32_t processingTicks = 0;
    portTickType wakeTick = 0;
    portTickType doneTick = 0;
+   uint32_t seqIterations = 50;
 
    while ( 1 )
    {
-      if ( pdPASS == xSemaphoreTake( g_p30MsTaskSemaphore, pdMS_TO_TICKS(30) ) )
+      if ( pdPASS == xSemaphoreTake( g_p30MsTaskSemaphore, portMAX_DELAY ) )
       {
+         UARTPRINTF( "\n***** TASK T1 *****\n" );
          wakeTick = xTaskGetTickCount();
-         UARTPRINTF( "\n***** TASK ONE *****\n" );
-         calculateFibonacciNumbers( 22 );
+         calculateFibonacciNumbers( seqIterations, _10MsIterations );
          doneTick = xTaskGetTickCount();
          processingTicks = doneTick - wakeTick;
-         UARTPRINTF( "TASK ONE: done after %d ticks, %d ms\n", processingTicks, processingTicks / portTICK_PERIOD_MS );
-         taskYIELD();
+         UARTPRINTF( "TASK T1: %d ticks - %d ms\n", processingTicks, processingTicks / portTICK_PERIOD_MS );
       }
    }
    vTaskDelete( NULL );
@@ -55,7 +56,7 @@ static void taskOne( void *pvParameters )
 uint32_t TaskOneInit( void )
 {
    if ( xTaskCreate( taskOne,
-         (const portCHAR *)"TaskOne",
+         (const portCHAR *)"T1",
          TASKONESTACKSIZE,
          NULL,
          tskIDLE_PRIORITY + PRIORITY_TASK_ONE,
