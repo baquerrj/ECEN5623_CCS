@@ -5,7 +5,6 @@
  *      Author: baquerrj
  */
 
-#include "rtest_10_1.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include "FreeRTOS.h"
@@ -24,6 +23,7 @@
 #include "semphr.h"
 #include "task.h"
 #include "utils/uartstdio.h"
+#include "rtes_10_1.h"
 
 //*****************************************************************************
 //

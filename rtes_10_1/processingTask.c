@@ -5,8 +5,6 @@
  *      Author: baquerrj
  */
 
-#include "processingTask.h"
-
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -25,6 +23,7 @@
 #include "semphr.h"
 #include "task.h"
 #include "utils/uartstdio.h"
+#include "processingTask.h"
 
 #define PROCESSINGTASKSTACKSIZE 128  // Stack size in words
 
@@ -34,9 +33,9 @@ extern portTickType g_wakeTick;
 
 static void processingTask( void *pvParameters )
 {
-   portTickType elapsed      = 0;
+   portTickType elapsed = 0;
    portTickType lastWakeTick = 0;
-   portTickType currentTick  = 0;
+   portTickType currentTick = 0;
    while ( 1 )
    {
       currentTick = xTaskGetTickCount();
@@ -52,11 +51,11 @@ static void processingTask( void *pvParameters )
 uint32_t ProcessingTaskInit( void )
 {
    if ( xTaskCreate( processingTask,
-                     (const portCHAR *)"PROCTASK",
-                     PROCESSINGTASKSTACKSIZE,
-                     NULL,
-                     tskIDLE_PRIORITY + PRIORITY_PROCESSING_TASK,
-                     NULL ) != pdTRUE )
+         (const portCHAR *)"PROCTASK",
+         PROCESSINGTASKSTACKSIZE,
+         NULL,
+         tskIDLE_PRIORITY + PRIORITY_PROCESSING_TASK,
+         NULL ) != pdTRUE )
    {
       return 1;
    }
