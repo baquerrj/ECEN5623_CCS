@@ -198,8 +198,6 @@ int main( void )
    uint32_t period = ROM_SysCtlClockGet() / 100;
    ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, period - 1 );
 
-   UARTprintf( "ROM_SysCtlClockGet() = %d\n", ROM_SysCtlClockGet() );
-
    // Enable interrupts from TIMER0
    ROM_IntEnable( INT_TIMER0A );
 
