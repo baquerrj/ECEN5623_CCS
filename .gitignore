@@ -5,6 +5,8 @@ Release/
 .config/
 .launches/
 
+# vscode
+.vscode/
 *.xml
 *.log
 

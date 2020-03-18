@@ -1,7 +1,0 @@
-{
-   "files.associations": {
-      "queue.h": "c",
-      "hw_memmap.h": "c",
-      "rom.h": "c"
-   }
-}
