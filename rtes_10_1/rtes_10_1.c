@@ -1,47 +1,29 @@
-//*****************************************************************************
-//
-// freertos_demo.c - Simple FreeRTOS example.
-//
-// Copyright (c) 2012-2017 Texas Instruments Incorporated.  All rights reserved.
-// Software License Agreement
-//
-// Texas Instruments (TI) is supplying this software for use solely and
-// exclusively on TI's microcontroller products. The software is owned by
-// TI and/or its suppliers, and is protected under applicable copyright
-// laws. You may not combine this software with "viral" open-source
-// software in order to form a larger program.
-//
-// THIS SOFTWARE IS PROVIDED "AS IS" AND WITH ALL FAULTS.
-// NO WARRANTIES, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT
-// NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. TI SHALL NOT, UNDER ANY
-// CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
-// DAMAGES, FOR ANY REASON WHATSOEVER.
-//
-// This is part of revision 2.1.4.178 of the EK-TM4C123GXL Firmware Package.
-//
-//*****************************************************************************
+/*
+ * rtes_10_1.c
+ *
+ *  Created on: Mar 15, 2020
+ *      Author: baquerrj
+ */
 
+#include "rtest_10_1.h"
 #include <stdbool.h>
 #include <stdint.h>
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "inc/hw_ints.h"
-#include "driverlib/interrupt.h"
-#include "driverlib/timer.h"
+#include "FreeRTOS.h"
 #include "driverlib/gpio.h"
+#include "driverlib/interrupt.h"
 #include "driverlib/pin_map.h"
 #include "driverlib/rom.h"
 #include "driverlib/sysctl.h"
+#include "driverlib/timer.h"
 #include "driverlib/uart.h"
-#include "utils/uartstdio.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
 #include "processingTask.h"
-
-#include "FreeRTOS.h"
-#include "task.h"
 #include "queue.h"
 #include "semphr.h"
-#include "rtes_10_1.h"
+#include "task.h"
+#include "utils/uartstdio.h"
 
 //*****************************************************************************
 //
@@ -123,8 +105,6 @@ void Timer0InterruptHandler( void )
    // context switch is required
    xHigherPriorityTaskWoken = pdFALSE;
 
-   UARTprintf( "Signaling Processing Task from ISR\n" );
-
    // Give the semaphore
    xSemaphoreGiveFromISR( g_pTaskSemaphore, &xHigherPriorityTaskWoken );
 }
@@ -137,6 +117,7 @@ void Timer0InterruptHandler( void )
 int main( void )
 {
    //
+
    // Set the clocking to run at 50 MHz from the PLL.
    //
    ROM_SysCtlClockSet( SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ |
@@ -155,25 +136,21 @@ int main( void )
    // Timer Configuration
    ROM_TimerConfigure( TIMER0_BASE, TIMER_CFG_PERIODIC );
 
-   ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, ROM_SysCtlClockGet() );
+   uint32_t period = ROM_SysCtlClockGet() / 10;
+   ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, period - 1 );
 
    // Enable interrupts from TIMER0
    ROM_IntEnable( INT_TIMER0A );
 
    // Enable timeout timer interrupt for TIMER0
-   ROM_TimerIntEnable( TIMER0_BASE, TIMER_TIMA_TIMEOUT ); //Timer 0 in Periodic mode
+   ROM_TimerIntEnable( TIMER0_BASE, TIMER_TIMA_TIMEOUT );
 
    // Timer Enable
    ROM_TimerEnable( TIMER0_BASE, TIMER_A );
 
-   //
-   // Print demo introduction.
-   //
    UARTprintf( "\n\nRTES Problem 10.1 on EK-TM4C123GXL\n" );
 
-   //
    // Create a mutex to guard the UART.
-   //
    g_pUARTSemaphore = xSemaphoreCreateMutex();
 
    // Create a binary semaphore for task signaling
