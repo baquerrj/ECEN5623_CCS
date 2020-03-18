@@ -31,7 +31,6 @@ extern xSemaphoreHandle g_pTaskSemaphore;
 extern void calculateFibonacciNumbers( uint32_t terms, uint32_t iterations );
 extern unsigned int _10MsIterations;
 
-#if 1
 static void taskOne( void *pvParameters )
 {
    int32_t processingTicks = 0;
@@ -53,28 +52,6 @@ static void taskOne( void *pvParameters )
    }
    vTaskDelete( NULL );
 }
-#else
-static void taskOne( void *pvParameters )
-{
-   int32_t processingTicks = 0;
-   uint32_t wakeTick = 0;
-   uint32_t doneTick = 0;
-   unsigned int seqIterations = 50;
-   while ( 1 )
-   {
-      xSemaphoreTake( g_pTaskSemaphore, portMAX_DELAY );
-      UARTPRINTF( "\n***** TASK T1 *****\n" );
-      wakeTick = TimerValueGet( TIMER0_BASE, TIMER_A );
-      calculateFibonacciNumbers( seqIterations, _10MsIterations );
-      doneTick = TimerValueGet( TIMER0_BASE, TIMER_A );
-      processingTicks = wakeTick - doneTick;
-      UARTPRINTF( "TASK T1: %d ticks - %d ms\n", processingTicks, processingTicks / 50000 );
-      xSemaphoreGive( g_pTaskSemaphore );
-      taskYIELD();
-   }
-   vTaskDelete( NULL );
-}
-#endif
 
 uint32_t TaskOneInit( void )
 {

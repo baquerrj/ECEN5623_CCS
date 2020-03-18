@@ -186,7 +186,7 @@ int main( void )
    ROM_IntEnable( INT_TIMER0A );
 
    // Enable timeout timer interrupt for TIMER0
-   ROM_TimerIntEnable( TIMER0_BASE, TIMER_TIMA_TIMEOUT ); //Timer 0 in Periodic mode
+   ROM_TimerIntEnable( TIMER0_BASE, TIMER_TIMA_TIMEOUT );
 
    // Timer Enable
    ROM_TimerEnable( TIMER0_BASE, TIMER_A );
