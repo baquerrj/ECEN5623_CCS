@@ -22,8 +22,9 @@ xSemaphoreHandle g_pTaskSemaphore;
 
 portTickType g_wakeTick;
 
-#define UARTPRINTF( fmt, ... ) xSemaphoreTake( g_pUARTSemaphore, portMAX_DELAY );\
-    UARTprintf( fmt, ##__VA_ARGS__ ); \
-    xSemaphoreGive( g_pUARTSemaphore )
+#define UARTPRINTF( fmt, ... )                        \
+   xSemaphoreTake( g_pUARTSemaphore, portMAX_DELAY ); \
+   UARTprintf( fmt, ##__VA_ARGS__ );                  \
+   xSemaphoreGive( g_pUARTSemaphore )
 
 #endif /* RTES_10_1_H_ */

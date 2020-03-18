@@ -5,8 +5,11 @@
  *      Author: baquerrj
  */
 
+#include "processingTask.h"
+
 #include <stdbool.h>
 #include <stdint.h>
+
 #include "FreeRTOS.h"
 #include "driverlib/gpio.h"
 #include "driverlib/rom.h"
@@ -22,7 +25,6 @@
 #include "semphr.h"
 #include "task.h"
 #include "utils/uartstdio.h"
-#include "processingTask.h"
 
 #define PROCESSINGTASKSTACKSIZE 128  // Stack size in words
 
@@ -32,17 +34,17 @@ extern portTickType g_wakeTick;
 
 static void processingTask( void *pvParameters )
 {
-   int32_t difference = 0;
-   portTickType lastWakeTime = 0;
-   portTickType currentTick = 0;
+   portTickType elapsed      = 0;
+   portTickType lastWakeTick = 0;
+   portTickType currentTick  = 0;
    while ( 1 )
    {
       currentTick = xTaskGetTickCount();
-      UARTPRINTF( "Waiting for semaphore at %d ticks, %d ms\n", currentTick, currentTick / portTICK_PERIOD_MS );
+      UARTPRINTF( "TASK: waiting on semaphore at %d ticks - %d ms\n", currentTick, currentTick / portTICK_PERIOD_MS );
       xSemaphoreTake( g_pTaskSemaphore, portMAX_DELAY );
-      difference = g_wakeTick - lastWakeTime;
-      UARTPRINTF( "PROC TASK: got semaphore after %d ticks, %d ms\n", difference, difference / portTICK_PERIOD_MS );
-      lastWakeTime = g_wakeTick;
+      elapsed = g_wakeTick - lastWakeTick;
+      UARTPRINTF( "TASK: got semaphore after %d ticks - %d ms\n", elapsed, elapsed / portTICK_PERIOD_MS );
+      lastWakeTick = g_wakeTick;
    }
    vTaskDelete( NULL );
 }
@@ -50,11 +52,11 @@ static void processingTask( void *pvParameters )
 uint32_t ProcessingTaskInit( void )
 {
    if ( xTaskCreate( processingTask,
-         (const portCHAR *)"ProcTask",
-         PROCESSINGTASKSTACKSIZE,
-         NULL,
-         tskIDLE_PRIORITY + PRIORITY_PROCESSING_TASK,
-         NULL ) != pdTRUE )
+                     (const portCHAR *)"PROCTASK",
+                     PROCESSINGTASKSTACKSIZE,
+                     NULL,
+                     tskIDLE_PRIORITY + PRIORITY_PROCESSING_TASK,
+                     NULL ) != pdTRUE )
    {
       return 1;
    }
