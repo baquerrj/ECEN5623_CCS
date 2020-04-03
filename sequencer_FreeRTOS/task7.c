@@ -1,5 +1,5 @@
 /*
- * task1.c
+ * task7.c
  *
  *  Created on: Mar 15, 2020
  *      Author: baquerrj
@@ -16,7 +16,7 @@
 #include "drivers/buttons.h"
 #include "driverlib/timer.h"
 #include "utils/uartstdio.h"
-#include "task1.h"
+#include "task7.h"
 #include "priorities.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -24,32 +24,32 @@
 #include "semphr.h"
 #include "sequencer.h"
 
-#define TASKONESTACKSIZE        128         // Stack size in words
+#define TASKSEVENSTACKSIZE        128         // Stack size in words
 
 extern xSemaphoreHandle g_pUARTSemaphore;
-extern xSemaphoreHandle pSemaphoreS1;
+extern xSemaphoreHandle pSemaphoreS7;
 
-extern bool abortS1;
+extern bool abortS7;
 
 static TaskHandle_t taskHandle;
-static void taskOne( void *pvParameters )
+static void taskSeven( void *pvParameters )
 {
 //   struct timeval current_time_val;
 //   double current_time;
-//   unsigned long long S1Cnt=0;
+//   unsigned long long S6Cnt=0;
 //   threadParams_t *threadParams = (threadParams_t *)threadp;
 //
 //   gettimeofday(&current_time_val, (struct timezone *)0);
 //   syslog(LOG_CRIT, "Frame Sampler thread @ sec=%d, msec=%d\n", (int)(current_time_val.tv_sec-start_time_val.tv_sec), (int)current_time_val.tv_usec/USEC_PER_MSEC);
 //   printf("Frame Sampler thread @ sec=%d, msec=%d\n", (int)(current_time_val.tv_sec-start_time_val.tv_sec), (int)current_time_val.tv_usec/USEC_PER_MSEC);
 //
-//   while(!abortS1)
+//   while(!abortS6)
 //   {
-//       sem_wait(&semS1);
-//       S1Cnt++;
+//       sem_wait(&semS6);
+//       S6Cnt++;
 //
 //       gettimeofday(&current_time_val, (struct timezone *)0);
-//       syslog(LOG_CRIT, "Frame Sampler release %llu @ sec=%d, msec=%d\n", S1Cnt, (int)(current_time_val.tv_sec-start_time_val.tv_sec), (int)current_time_val.tv_usec/USEC_PER_MSEC);
+//       syslog(LOG_CRIT, "Frame Sampler release %llu @ sec=%d, msec=%d\n", S6Cnt, (int)(current_time_val.tv_sec-start_time_val.tv_sec), (int)current_time_val.tv_usec/USEC_PER_MSEC);
 //   }
 //
    portTickType wakeTick = 0;
@@ -59,9 +59,9 @@ static void taskOne( void *pvParameters )
    const char * taskName = ( const char* ) pcTaskGetTaskName( taskHandle );
 
    TASKLOGTIME( taskName, releases, xTaskGetTickCount() );
-   while ( !abortS1 )
+   while ( !abortS7 )
    {
-      if ( pdPASS == xSemaphoreTake( pSemaphoreS1, portMAX_DELAY ) )
+      if ( pdPASS == xSemaphoreTake( pSemaphoreS7, portMAX_DELAY ) )
       {
          wakeTick = xTaskGetTickCount();
          releases++;
@@ -77,14 +77,14 @@ static void taskOne( void *pvParameters )
    vTaskDelete( NULL );
 }
 
-uint32_t TaskOneInit( void )
+uint32_t TaskSevenInit( void )
 {
    taskHandle = NULL;
-   if ( xTaskCreate( taskOne,
-         (const portCHAR *)"S1",
-         TASKONESTACKSIZE,
+   if ( xTaskCreate( taskSeven,
+         (const portCHAR *)"S7",
+         TASKSEVENSTACKSIZE,
          NULL,
-         PRIORITY_TASK_ONE,
+         PRIORITY_TASK_SEVEN,
          &taskHandle ) != pdTRUE )
    {
       return 1;

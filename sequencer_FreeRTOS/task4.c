@@ -1,5 +1,5 @@
 /*
- * task1.c
+ * task4.c
  *
  *  Created on: Mar 15, 2020
  *      Author: baquerrj
@@ -16,7 +16,7 @@
 #include "drivers/buttons.h"
 #include "driverlib/timer.h"
 #include "utils/uartstdio.h"
-#include "task1.h"
+#include "task4.h"
 #include "priorities.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -24,15 +24,15 @@
 #include "semphr.h"
 #include "sequencer.h"
 
-#define TASKONESTACKSIZE        128         // Stack size in words
+#define TASKFOURSTACKSIZE        128         // Stack size in words
 
 extern xSemaphoreHandle g_pUARTSemaphore;
-extern xSemaphoreHandle pSemaphoreS1;
+extern xSemaphoreHandle pSemaphoreS4;
 
-extern bool abortS1;
+extern bool abortS4;
 
 static TaskHandle_t taskHandle;
-static void taskOne( void *pvParameters )
+static void taskFour( void *pvParameters )
 {
 //   struct timeval current_time_val;
 //   double current_time;
@@ -59,9 +59,9 @@ static void taskOne( void *pvParameters )
    const char * taskName = ( const char* ) pcTaskGetTaskName( taskHandle );
 
    TASKLOGTIME( taskName, releases, xTaskGetTickCount() );
-   while ( !abortS1 )
+   while ( !abortS4 )
    {
-      if ( pdPASS == xSemaphoreTake( pSemaphoreS1, portMAX_DELAY ) )
+      if ( pdPASS == xSemaphoreTake( pSemaphoreS4, portMAX_DELAY ) )
       {
          wakeTick = xTaskGetTickCount();
          releases++;
@@ -77,14 +77,14 @@ static void taskOne( void *pvParameters )
    vTaskDelete( NULL );
 }
 
-uint32_t TaskOneInit( void )
+uint32_t TaskFourInit( void )
 {
    taskHandle = NULL;
-   if ( xTaskCreate( taskOne,
-         (const portCHAR *)"S1",
-         TASKONESTACKSIZE,
+   if ( xTaskCreate( taskFour,
+         (const portCHAR *)"S4",
+         TASKFOURSTACKSIZE,
          NULL,
-         PRIORITY_TASK_ONE,
+         PRIORITY_TASK_FOUR,
          &taskHandle ) != pdTRUE )
    {
       return 1;

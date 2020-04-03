@@ -25,13 +25,25 @@
 #ifndef __PRIORITIES_H__
 #define __PRIORITIES_H__
 
+#include "FreeRTOSConfig.h"
+
 //*****************************************************************************
 //
 // The priorities of the various tasks.
 //
 //*****************************************************************************
-#define PRIORITY_TASK_ONE 2   // 30ms task
-#define PRIORITY_TASK_TWO 1   // 80ms task
+#define THREEHZ_PRIORITY      (configMAX_PRIORITIES-1)
+#define ONEHZ_PRIORITY        (configMAX_PRIORITIES-2)
+#define ONEHALFHZ_PRIORITY    (configMAX_PRIORITIES-3)
+#define ONETENHZ_PRIORITY     (configMAX_PRIORITIES-4)
+
+#define PRIORITY_TASK_ONE     (THREEHZ_PRIORITY)
+#define PRIORITY_TASK_TWO     (ONEHZ_PRIORITY)
+#define PRIORITY_TASK_THREE   (ONEHALFHZ_PRIORITY)
+#define PRIORITY_TASK_FOUR    (ONEHZ_PRIORITY)
+#define PRIORITY_TASK_FIVE    (ONEHALFHZ_PRIORITY)
+#define PRIORITY_TASK_SIX     (ONEHZ_PRIORITY)
+#define PRIORITY_TASK_SEVEN   (ONETENHZ_PRIORITY)
 
 
 #endif // __PRIORITIES_H__

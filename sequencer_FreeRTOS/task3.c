@@ -1,5 +1,12 @@
 /*
- * task2.c
+ * task3.c
+ *
+ *  Created on: Apr 3, 2020
+ *      Author: baquerrj
+ */
+
+/*
+ * taskTwo.c
  *
  *  Created on: Mar 15, 2020
  *      Author: baquerrj
@@ -16,7 +23,7 @@
 #include "drivers/buttons.h"
 #include "driverlib/timer.h"
 #include "utils/uartstdio.h"
-#include "task2.h"
+#include "task3.h"
 #include "priorities.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -24,16 +31,16 @@
 #include "semphr.h"
 #include "sequencer.h"
 
-#define TASKTWOSTACKSIZE        128         // Stack size in words
+#define TASKTHREESTACKSIZE        128         // Stack size in words
 
 extern xSemaphoreHandle g_pUARTSemaphore;
-extern xSemaphoreHandle pSemaphoreS2;
+extern xSemaphoreHandle pSemaphoreS3;
 
-extern bool abortS2;
+extern bool abortS3;
 
 static TaskHandle_t taskHandle;
 
-static void taskTwo( void *pvParameters )
+static void taskThree( void *pvParameters )
 {
    portTickType wakeTick = 0;
    portTickType doneTick = 0;
@@ -42,9 +49,9 @@ static void taskTwo( void *pvParameters )
    const char * taskName = ( const char* ) pcTaskGetTaskName( taskHandle );
 
    TASKLOGTIME( taskName, releases, xTaskGetTickCount() );
-   while ( !abortS2 )
+   while ( !abortS3 )
    {
-      if ( pdPASS == xSemaphoreTake( pSemaphoreS2, portMAX_DELAY ) )
+      if ( pdPASS == xSemaphoreTake( pSemaphoreS3, portMAX_DELAY ) )
       {
          wakeTick = xTaskGetTickCount();
          releases++;
@@ -60,14 +67,14 @@ static void taskTwo( void *pvParameters )
    vTaskDelete( NULL );
 }
 
-uint32_t TaskTwoInit( void )
+uint32_t TaskThreeInit( void )
 {
    taskHandle = NULL;
-   if ( xTaskCreate( taskTwo,
-         (const portCHAR *)"S2",
-         TASKTWOSTACKSIZE,
+   if ( xTaskCreate( taskThree,
+         (const portCHAR *)"S3",
+         TASKTHREESTACKSIZE,
          NULL,
-         PRIORITY_TASK_TWO,
+         PRIORITY_TASK_THREE,
          &taskHandle) != pdTRUE )
    {
       return 1;
@@ -76,3 +83,4 @@ uint32_t TaskTwoInit( void )
    return 0;
 
 }
+

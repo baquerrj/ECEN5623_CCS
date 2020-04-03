@@ -21,12 +21,20 @@
 #include "utils/uartstdio.h"
 #include "task1.h"
 #include "task2.h"
+#include "task3.h"
+#include "task4.h"
+#include "task5.h"
+#include "task6.h"
+#include "task7.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
 #include "sequencer.h"
+
+//#define ISR_TIMING
+static const uint32_t ITERATIONS = 1000;
 //*****************************************************************************
 //
 // The error routine that is called if the driver library encounters an error.
@@ -63,16 +71,43 @@ void vApplicationStackOverflowHook( xTaskHandle *pxTask, char *pcTaskName )
 void Timer0InterruptHandler( void )
 {
    static uint32_t count = 0;
+   count++;
 
    BaseType_t xHigherPriorityTaskWoken;
 #ifdef ISR_TIMING
-   // Get the current system tick
-   g_wakeTick = xTaskGetTickCountFromISR();
-   portTickType elapsed = 0;
-
-   elapsed = g_wakeTick - g_lastWakeTick;
-   UARTprintf( "\nISR: time elapsed %d ticks, %d ms\n", elapsed, elapsed / portTICK_PERIOD_MS );
-   g_lastWakeTick = g_wakeTick;
+   if ( ITERATIONS > count )
+   {
+      if ( count % task1Frequency == 0 )
+      {
+         UARTprintf( "Iteration [%d]: would release S1\n", count );
+      }
+      if ( count % task2Frequency == 0 )
+      {
+         UARTprintf( "Iteration [%d]: would release S2\n", count );
+      }
+//      else if ( count % task3Frequency == 0 )
+//      {
+//      UARTprintf( "Iteration [%d]: would release S3\n", count );
+//      }
+   }
+   else
+   {
+      if ( !abortS1 )
+      {
+         abortS1 = true;
+         UARTprintf( "Iteration [%d]: would abort S1\n", count );
+      }
+      if ( !abortS2 )
+      {
+         abortS2 = true;
+         UARTprintf( "Iteration [%d]: would abort S2\n", count );
+      }
+//      if ( !abortS3 )
+//      {
+//         abortS3 = true;
+//      UARTprintf( "Iteration [%d]: would abort S3\n", count );
+//      }
+   }
 
    // Clear the interrupt
    ROM_TimerIntClear( TIMER0_BASE, TIMER_TIMA_TIMEOUT );
@@ -84,18 +119,77 @@ void Timer0InterruptHandler( void )
    // context switch is required
    xHigherPriorityTaskWoken = pdFALSE;
 
-   if ( count % 3 == 0 )
+   if ( ITERATIONS > count )
    {
-      xSemaphoreGiveFromISR( g_p30MsTaskSemaphore, &xHigherPriorityTaskWoken );
+      if ( count % task1Frequency == 0 )
+      {
+         xSemaphoreGiveFromISR( pSemaphoreS1, &xHigherPriorityTaskWoken );
+      }
+      if ( count % task2Frequency == 0 )
+      {
+         xSemaphoreGiveFromISR( pSemaphoreS2, &xHigherPriorityTaskWoken );
+      }
+      if ( count % task3Frequency == 0 )
+      {
+         xSemaphoreGiveFromISR( pSemaphoreS3, &xHigherPriorityTaskWoken );
+      }
+      if ( count % task4Frequency == 0 )
+      {
+         xSemaphoreGiveFromISR( pSemaphoreS4, &xHigherPriorityTaskWoken );
+      }
+      if ( count % task5Frequency == 0 )
+      {
+         xSemaphoreGiveFromISR( pSemaphoreS5, &xHigherPriorityTaskWoken );
+      }
+      if ( count % task6Frequency == 0 )
+      {
+         xSemaphoreGiveFromISR( pSemaphoreS6, &xHigherPriorityTaskWoken );
+      }
+      if ( count % task7Frequency == 0 )
+      {
+         xSemaphoreGiveFromISR( pSemaphoreS7, &xHigherPriorityTaskWoken );
+      }
    }
-   else if ( count % 8 == 0 )
+   else
    {
-      xSemaphoreGiveFromISR( g_p80MsTaskSemaphore, &xHigherPriorityTaskWoken );
+      if ( !abortS1 )
+      {
+         abortS1 = true;
+         xSemaphoreGiveFromISR( pSemaphoreS1, &xHigherPriorityTaskWoken );
+      }
+      if ( !abortS2 )
+      {
+         abortS2 = true;
+         xSemaphoreGiveFromISR( pSemaphoreS2, &xHigherPriorityTaskWoken );
+      }
+      if ( !abortS3 )
+      {
+         abortS3 = true;
+         xSemaphoreGiveFromISR( pSemaphoreS3, &xHigherPriorityTaskWoken );
+      }
+      if ( !abortS4 )
+      {
+         abortS4 = true;
+         xSemaphoreGiveFromISR( pSemaphoreS4, &xHigherPriorityTaskWoken );
+      }
+      if ( !abortS5 )
+      {
+         abortS5 = true;
+         xSemaphoreGiveFromISR( pSemaphoreS5, &xHigherPriorityTaskWoken );
+      }
+      if ( !abortS6 )
+      {
+         abortS6 = true;
+         xSemaphoreGiveFromISR( pSemaphoreS6, &xHigherPriorityTaskWoken );
+      }
+      if ( !abortS7 )
+      {
+         abortS7 = true;
+         xSemaphoreGiveFromISR( pSemaphoreS7, &xHigherPriorityTaskWoken );
+      }
    }
-
    portYIELD_FROM_ISR( &xHigherPriorityTaskWoken );
 #endif
-   count++;
 }
 
 //*****************************************************************************
@@ -133,27 +227,6 @@ void ConfigureUART( void )
    UARTStdioConfig( 0, 115200, 16000000 );
 }
 
-void calculateFibonacciNumbers( uint32_t terms, uint32_t iterations )
-{
-   uint32_t n1 = 0;
-   uint32_t n2 = 1;
-   uint32_t i = 0;
-   uint32_t j = 0;
-   uint32_t nextTerm = 0;
-
-   for ( i = 0; i < iterations; ++i )
-   {
-      nextTerm = n1 + n2;
-      while ( j < terms )
-      {
-         n1 = n2;
-         n2 = nextTerm;
-         nextTerm = n1 + n2;
-         j++;
-      }
-   }
-}
-
 //*****************************************************************************
 //
 // Initialize FreeRTOS and start the initial set of tasks.
@@ -178,8 +251,8 @@ int main( void )
 
    // Timer Configuration
    ROM_TimerConfigure( TIMER0_BASE, TIMER_CFG_PERIODIC );
-   uint32_t period = ROM_SysCtlClockGet() / 100;
-   ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, period - 1 );
+   uint32_t period = ROM_SysCtlClockGet() / 30; // 30Hz interrupt
+   ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, period );
 
    // Enable interrupts from TIMER0
    ROM_IntEnable( INT_TIMER0A );
@@ -197,16 +270,27 @@ int main( void )
    g_lastWakeTick = 0;
    g_wakeTick = 0;
 
-   _10MsIterations = 49600;
-   _40MsIterations = 199000;
-   //
    // Create a mutex to guard the UART.
-   //
    g_pUARTSemaphore = xSemaphoreCreateMutex();
 
+#ifndef ISR_TIMING
    // Create a binary semaphore for task signaling
-   g_p30MsTaskSemaphore = xSemaphoreCreateBinary();
-   g_p80MsTaskSemaphore = xSemaphoreCreateBinary();
+   pSemaphoreS1 = xSemaphoreCreateBinary();
+   pSemaphoreS2 = xSemaphoreCreateBinary();
+   pSemaphoreS3 = xSemaphoreCreateBinary();
+   pSemaphoreS4 = xSemaphoreCreateBinary();
+   pSemaphoreS5 = xSemaphoreCreateBinary();
+   pSemaphoreS6 = xSemaphoreCreateBinary();
+   pSemaphoreS7 = xSemaphoreCreateBinary();
+
+   abortS1 = false;
+   abortS2 = false;
+   abortS3 = false;
+   abortS4 = false;
+   abortS5 = false;
+   abortS6 = false;
+   abortS7 = false;
+
    if ( TaskOneInit() != 0 )
    {
       while ( 1 )
@@ -220,7 +304,38 @@ int main( void )
       {
       }
    }
+   if ( TaskThreeInit() != 0 )
+   {
+      while ( 1 )
+      {
+      }
+   }
+   if ( TaskFourInit() != 0 )
+   {
+      while ( 1 )
+      {
+      }
+   }
+   if ( TaskFiveInit() != 0 )
+   {
+      while ( 1 )
+      {
+      }
+   }
+   if ( TaskSixInit() != 0 )
+   {
+      while ( 1 )
+      {
+      }
+   }
+   if ( TaskSevenInit() != 0 )
+   {
+      while ( 1 )
+      {
+      }
+   }
 
+#endif
    //
    // Start the scheduler.  This should not return.
    //
