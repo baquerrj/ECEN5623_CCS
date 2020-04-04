@@ -267,7 +267,7 @@ int main( void )
    // Print demo introduction.
    //
    UARTprintf( "\nECEN5623: Exercise-5 Problem 2\n" );
-   UARTprintf( "FreeRTOS revision of segenc2 running on TM4C123GXL\n" );
+   UARTprintf( "FreeRTOS revision of seqgen2 running on TM4C123GXL\n" );
 
 
    g_lastWakeTick = 0;
@@ -294,8 +294,6 @@ int main( void )
    abortS6 = false;
    abortS7 = false;
 
-   double foo = 234.023;
-   UARTprintf( "*** %f ***\n", foo );
    if ( TaskOneInit() != 0 )
    {
       while ( 1 )
