@@ -256,6 +256,7 @@ int main( void )
 
    // Enable interrupts from TIMER0
    ROM_IntEnable( INT_TIMER0A );
+   ROM_IntPrioritySet( INT_TIMER0A, 7 << 5 );
 
    // Enable timeout timer interrupt for TIMER0
    ROM_TimerIntEnable( TIMER0_BASE, TIMER_TIMA_TIMEOUT );

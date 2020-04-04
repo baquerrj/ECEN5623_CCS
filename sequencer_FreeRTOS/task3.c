@@ -46,7 +46,7 @@ static void taskThree( void *pvParameters )
    portTickType doneTick = 0;
    portTickType wcet = 0;
    uint32_t releases = 0;
-   const char * taskName = ( const char* ) pcTaskGetTaskName( taskHandle );
+   const char * taskName = ( const char* ) pcTaskGetName( taskHandle );
 
    TASKLOGTIME( taskName, releases, xTaskGetTickCount() );
    while ( !abortS3 )
