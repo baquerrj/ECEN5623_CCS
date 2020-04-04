@@ -34,7 +34,7 @@
 #include "sequencer.h"
 
 //#define ISR_TIMING
-static const uint32_t ITERATIONS = 1000;
+static const uint32_t ITERATIONS = 10000;
 //*****************************************************************************
 //
 // The error routine that is called if the driver library encounters an error.
@@ -266,7 +266,9 @@ int main( void )
    //
    // Print demo introduction.
    //
-   UARTprintf( "\n\Welcome to EK-TM4C123GXL\n" );
+   UARTprintf( "\nECEN5623: Exercise-5 Problem 2\n" );
+   UARTprintf( "FreeRTOS revision of segenc running on TM4C123GXL\n" );
+
 
    g_lastWakeTick = 0;
    g_wakeTick = 0;
