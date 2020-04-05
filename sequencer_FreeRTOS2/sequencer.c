@@ -251,7 +251,7 @@ int main( void )
 
    // Timer Configuration
    ROM_TimerConfigure( TIMER0_BASE, TIMER_CFG_PERIODIC );
-   uint32_t period = ROM_SysCtlClockGet() / 30; // 30Hz interrupt
+   uint32_t period = ROM_SysCtlClockGet() / 60; // 60Hz interrupt
    ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, period );
 
    // Enable interrupts from TIMER0
