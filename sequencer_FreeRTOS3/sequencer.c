@@ -5,7 +5,6 @@
  *      Author: baquerrj
  */
 
-
 #include <stdbool.h>
 #include <stdint.h>
 #include "inc/hw_memmap.h"
@@ -33,8 +32,6 @@
 #include "semphr.h"
 #include "sequencer.h"
 
-static const uint32_t ITERATIONS = 1800;
-
 //*****************************************************************************
 //
 // The error routine that is called if the driver library encounters an error.
@@ -54,11 +51,9 @@ void __error__( char *pcFilename, uint32_t ui32Line )
 //*****************************************************************************
 void vApplicationStackOverflowHook( xTaskHandle *pxTask, char *pcTaskName )
 {
-   //
    // This function can not return, so loop forever.  Interrupts are disabled
    // on entry to this function, so no processor interrupts will interrupt
    // this loop.
-   //
    while ( 1 )
    {
    }
@@ -69,23 +64,19 @@ void vApplicationStackOverflowHook( xTaskHandle *pxTask, char *pcTaskName )
 //*****************************************************************************
 void Timer0InterruptHandler( void )
 {
+#ifdef ISR_TIMING
    static uint8_t state = 0;
-
-   g_wakeTick = xTaskGetTickCountFromISR();
    count++;
    // Clear the interrupt
    ROM_TimerIntClear( TIMER0_BASE, TIMER_TIMA_TIMEOUT );
-   BaseType_t xHigherPriorityTaskWoken;
-   // Set xHigherPriorityTaskWoken to pdFALSE - will be set to pdTRUE if a
-   // context switch is required
-   xHigherPriorityTaskWoken = pdFALSE;
-#ifdef ISR_TIMING
    state = (state == 0) ? 1 : 0;
    GPIOPinWrite( GPIO_PORTB_BASE, GPIO_PIN_0, state );
 #else
+   count++;
    // Clear the interrupt
    ROM_TimerIntClear( TIMER0_BASE, TIMER_TIMA_TIMEOUT );
 
+   BaseType_t xHigherPriorityTaskWoken;
    // Set xHigherPriorityTaskWoken to pdFALSE - will be set to pdTRUE if a
    // context switch is required
    xHigherPriorityTaskWoken = pdFALSE;
@@ -160,68 +151,40 @@ void Timer0InterruptHandler( void )
       }
    }
 #endif
-
-//   portYIELD_FROM_ISR( &xHigherPriorityTaskWoken );
+   portYIELD_FROM_ISR( &xHigherPriorityTaskWoken );
 }
 
-//*****************************************************************************
-//
-// Configure the UART and its pins.  This must be called before UARTprintf().
-//
-//*****************************************************************************
+//! Configure UART
 void ConfigureUART( void )
 {
-   //
    // Enable the GPIO Peripheral used by the UART.
-   //
    ROM_SysCtlPeripheralEnable( SYSCTL_PERIPH_GPIOA );
 
-   //
    // Enable UART0
-   //
    ROM_SysCtlPeripheralEnable( SYSCTL_PERIPH_UART0 );
 
-   //
    // Configure GPIO Pins for UART mode.
-   //
    ROM_GPIOPinConfigure( GPIO_PA0_U0RX );
    ROM_GPIOPinConfigure( GPIO_PA1_U0TX );
    ROM_GPIOPinTypeUART( GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1 );
 
-   //
    // Use the internal 16MHz oscillator as the UART clock source.
-   //
    UARTClockSourceSet( UART0_BASE, UART_CLOCK_PIOSC );
 
-   //
    // Initialize the UART for console I/O.
-   //
    UARTStdioConfig( 0, 115200, 16000000 );
 }
 
+//! Configure GPIO pins to toggle for timer ISR interrupt verification
 void configureGPIOForTiming( void )
 {
    ROM_SysCtlPeripheralEnable( SYSCTL_PERIPH_GPIOB );
    GPIOPinTypeGPIOOutput( GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1 );
 }
 
-//*****************************************************************************
-//
-// Initialize FreeRTOS and start the initial set of tasks.
-//
-//*****************************************************************************
-int main( void )
+//! Configure TIMER0 for timer interrupt
+void configureTimer0( void )
 {
-   //
-   // Set the clocking to run at 80 MHz from the PLL.
-   //
-   SysCtlClockSet( SYSCTL_SYSDIV_2_5 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ | SYSCTL_OSC_MAIN );
-
-   //
-   // Initialize the UART and configure it for 115,200, 8-N-1 operation.
-   //
-   ConfigureUART();
-   configureGPIOForTiming();
    ROM_SysCtlPeripheralEnable( SYSCTL_PERIPH_TIMER0 );
 
    // Enable processor interrupts
@@ -229,7 +192,7 @@ int main( void )
 
    // Timer Configuration
    ROM_TimerConfigure( TIMER0_BASE, TIMER_CFG_PERIODIC );
-   uint32_t period = ROM_SysCtlClockGet() / 3000; // 60Hz interrupt
+   uint32_t period = ROM_SysCtlClockGet() / SEQ_FREQUENCY; // 300 interrupt
    ROM_TimerLoadSet( TIMER0_BASE, TIMER_A, period );
 
    // Enable interrupts from TIMER0
@@ -241,18 +204,45 @@ int main( void )
 
    // Timer Enable
    ROM_TimerEnable( TIMER0_BASE, TIMER_A );
-   //
+}
+
+//! Configure TIMER1 to keep track of time
+void configureTimer1( void )
+{
+   ROM_SysCtlPeripheralEnable( SYSCTL_PERIPH_TIMER1 );
+
+   // Timer Configuration
+   ROM_TimerConfigure( TIMER1_BASE, TIMER_CFG_PERIODIC_UP );
+   ROM_TimerLoadSet( TIMER1_BASE, TIMER_A, 0xFFFFFFFF );
+
+   // Timer Enable
+   ROM_TimerEnable( TIMER1_BASE, TIMER_A );
+}
+
+
+//! Initialize FreeRTOS and start the initial set of tasks.
+int main( void )
+{
+   // Set the clocking to run at 80 MHz from the PLL.
+   SysCtlClockSet( SYSCTL_SYSDIV_2_5 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ | SYSCTL_OSC_MAIN );
+
+   // Initialize the UART and configure it for 115,200, 8-N-1 operation.
+   ConfigureUART();
+#ifdef ISR_TIMING
+   configureGPIOForTiming();
+#endif
+
    // Print demo introduction.
-   //
    UARTprintf( "\nECEN5623: Exercise-5 Problem 3\n" );
-   UARTprintf( "FreeRTOS revision of seqgen2 running on TM4C123GXL\n" );
-
-
+   UARTprintf( "FreeRTOS high-speed revision of seqgen running on TM4C123GXL @ %u Hz\n", SEQ_FREQUENCY );
    g_lastWakeTick = 0;
    g_wakeTick = 0;
    count = 0;
    // Create a mutex to guard the UART.
    g_pUARTSemaphore = xSemaphoreCreateMutex();
+   // Configure timer used for ISR
+   configureTimer0();
+   configureTimer1();
 
 #ifdef ISR_TIMING
    pSemaphoreS1 = xSemaphoreCreateBinary();
@@ -331,15 +321,11 @@ int main( void )
    }
 
 #endif
-   //
    // Start the scheduler.  This should not return.
-   //
    vTaskStartScheduler();
 
-   //
    // In case the scheduler returns for some reason, print an error and loop
    // forever.
-   //
 
    while ( 1 )
    {

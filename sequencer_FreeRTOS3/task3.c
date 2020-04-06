@@ -48,22 +48,21 @@ static void taskThree( void *pvParameters )
    uint32_t releases = 0;
    const char * taskName = ( const char* ) pcTaskGetName( taskHandle );
 
-   TASKLOGTIME( taskName, releases, xTaskGetTickCount() );
+   TASKLOGTIME( taskName, releases, getTimeFromTimer() );
    while ( !abortS3 )
    {
       if ( pdPASS == xSemaphoreTake( pSemaphoreS3, portMAX_DELAY ) )
       {
-         wakeTick = xTaskGetTickCount();
+         wakeTick = getTimeFromTimer();
          releases++;
          TASKLOGTIME( taskName, releases, wakeTick );
-         doneTick = xTaskGetTickCount();
-         if ( ( doneTick - wakeTick ) > wcet )
-         {
-            wcet = doneTick - wakeTick;
-         }
+         doneTick = getTimeFromTimer();
+         wcet = getTimeDifference( wakeTick, doneTick );
+
+//         xSemaphoreGive( pSemaphoreS3 );
       }
    }
-   UARTPRINTF( "\n*** %s: WCET = %d ms ***\n", taskName, wcet / portTICK_PERIOD_MS );
+   UARTPRINTF( "\n*** %s: %d times WCET = %d ms ***\n", taskName, releases, wcet );
    vTaskDelete( NULL );
 }
 

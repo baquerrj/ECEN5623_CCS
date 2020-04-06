@@ -51,22 +51,22 @@ static void taskOne( void *pvParameters )
    uint32_t releases = 0;
    const char * taskName = ( const char* ) pcTaskGetName( taskHandle );
 
-   TASKLOGTIME( taskName, releases, xTaskGetTickCount() );
+   TASKLOGTIME( taskName, releases, getTimeFromTimer() );
    while ( !abortS1 )
    {
       if ( pdPASS == xSemaphoreTake( pSemaphoreS1, portMAX_DELAY ) )
       {
-         wakeTick = xTaskGetTickCount();
+         wakeTick = getTimeFromTimer();
          releases++;
          TASKLOGTIME( taskName, releases, wakeTick );
-         doneTick = xTaskGetTickCount();
-         if ( ( doneTick - wakeTick ) > wcet )
-         {
-            wcet = doneTick - wakeTick;
-         }
+         doneTick = getTimeFromTimer();
+         wcet = getTimeDifference( wakeTick, doneTick );
+
+//         xSemaphoreGive( pSemaphoreS1 );
       }
    }
 #endif
+   UARTPRINTF( "\n*** %s: %d times WCET = %d ms ***\n", taskName, releases, wcet );
    vTaskDelete( NULL );
 }
 
