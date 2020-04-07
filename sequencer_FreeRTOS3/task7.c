@@ -53,7 +53,7 @@ static void taskSeven( void *pvParameters )
 //         xSemaphoreGive( pSemaphoreS7 );
       }
    }
-   UARTPRINTF( "\n*** %s: %d times WCET = %d ms ***\n", taskName, releases, wcet );
+   TASKLOGEND( taskName, releases, wcet );
    vTaskDelete( NULL );
 }
 

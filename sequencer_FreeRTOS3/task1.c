@@ -66,8 +66,7 @@ static void taskOne( void *pvParameters )
       }
    }
 #endif
-   UARTPRINTF( "\n*** %s: %d times WCET = %d ms ***\n", taskName, releases, wcet );
-   vTaskDelete( NULL );
+   TASKLOGEND( taskName, releases, wcet );   vTaskDelete( NULL );
 }
 
 uint32_t TaskOneInit( void )

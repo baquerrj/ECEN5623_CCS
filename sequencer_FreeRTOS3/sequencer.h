@@ -10,9 +10,9 @@
 
 #include "semphr.h"
 
-static const uint32_t ITERATIONS = 900;
+static const uint32_t ITERATIONS = 9000;
 
-#define FREQ_MULTIPLIER          (20)
+#define FREQ_MULTIPLIER          (100)
 
 // Sequencer - 3000 Hz
 //                   [gives semaphores to all other services]
@@ -79,6 +79,8 @@ bool abortS7;
 
 //#define ISR_TIMING
 //#define TASK_LOG_ON
+#define TASK_END_LOG
+
 //! Ticks for ISR timing
 portTickType g_wakeTick;
 portTickType g_lastWakeTick;
@@ -97,6 +99,14 @@ uint32_t count;
    xSemaphoreGive( g_pUARTSemaphore )
 #else
 #define TASKLOGTIME( _task, _release, _tick )   // noop
+#endif
+
+#ifdef TASK_END_LOG
+#define TASKLOGEND( _task, _release, _tick ) xSemaphoreTake( g_pUARTSemaphore, portMAX_DELAY );\
+   UARTprintf( "\n*** %s: %d times WCET = %d tick ***\n", _task, _release, _tick );\
+     xSemaphoreGive( g_pUARTSemaphore )
+#else
+#define TASKLOGEND( _task, _release, _tick )    // no-op
 #endif
 
 inline uint32_t getTimeFromTimer( void )

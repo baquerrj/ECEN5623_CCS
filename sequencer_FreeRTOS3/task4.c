@@ -54,19 +54,18 @@ static void taskFour( void *pvParameters )
 //         xSemaphoreGive( pSemaphoreS4 );
       }
    }
-   UARTPRINTF( "\n*** %s: %d times WCET = %d ms ***\n", taskName, releases, wcet );
+   TASKLOGEND( taskName, releases, wcet );
    vTaskDelete( NULL );
 }
 
 uint32_t TaskFourInit( void )
 {
    taskHandle = NULL;
-   if ( xTaskCreate( taskFour,
-         (const portCHAR *)"S4",
-         TASKFOURSTACKSIZE,
-         NULL,
-         PRIORITY_TASK_FOUR,
-         &taskHandle ) != pdTRUE )
+   if ( xTaskCreate( taskFour, ( const portCHAR * ) "S4",
+   TASKFOURSTACKSIZE,
+                     NULL,
+                     PRIORITY_TASK_FOUR,
+                     &taskHandle ) != pdTRUE )
    {
       return 1;
    }

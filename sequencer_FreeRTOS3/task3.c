@@ -62,19 +62,18 @@ static void taskThree( void *pvParameters )
 //         xSemaphoreGive( pSemaphoreS3 );
       }
    }
-   UARTPRINTF( "\n*** %s: %d times WCET = %d ms ***\n", taskName, releases, wcet );
+   TASKLOGEND( taskName, releases, wcet );
    vTaskDelete( NULL );
 }
 
 uint32_t TaskThreeInit( void )
 {
    taskHandle = NULL;
-   if ( xTaskCreate( taskThree,
-         (const portCHAR *)"S3",
-         TASKTHREESTACKSIZE,
-         NULL,
-         PRIORITY_TASK_THREE,
-         &taskHandle) != pdTRUE )
+   if ( xTaskCreate( taskThree, ( const portCHAR * ) "S3",
+   TASKTHREESTACKSIZE,
+                     NULL,
+                     PRIORITY_TASK_THREE,
+                     &taskHandle ) != pdTRUE )
    {
       return 1;
    }
