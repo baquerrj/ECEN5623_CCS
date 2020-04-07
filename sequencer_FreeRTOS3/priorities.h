@@ -34,19 +34,14 @@
 //*****************************************************************************
 //
 //
-// Sequencer = RT_MAX   @ 300 Hz
-// Servcie_1 = RT_MAX-1 @ 30 Hz
-// Service_2 = RT_MAX-2 @ 10 Hz
+// Sequencer = RT_MAX   @ 3000 Hz
+// Servcie_1 = RT_MAX-1 @ 300 Hz
+// Service_2 = RT_MAX-2 @ 100 Hz
 // Service_3 = RT_MAX-3 @ 50 Hz
-// Service_4 = RT_MAX-2 @ 10 Hz
+// Service_4 = RT_MAX-2 @ 100 Hz
 // Service_5 = RT_MAX-3 @ 50 Hz
 // Service_6 = RT_MAX-2 @ 100 Hz
 // Service_7 = RT_MIN   10 Hz
-
-#define THIRTYHZ_PRIORITY     (configMAX_PRIORITIES-1)
-#define TENHZ_PRIORITY        (configMAX_PRIORITIES-2)
-#define FIVEHZ_PRIORITY       (configMAX_PRIORITIES-3)
-#define ONEHZ_PRIORITY        (configMAX_PRIORITIES-4)
 
 #define PRIORITY_TASK_ONE     (configMAX_PRIORITIES-1)
 #define PRIORITY_TASK_TWO     (configMAX_PRIORITIES-2)
@@ -55,6 +50,5 @@
 #define PRIORITY_TASK_FIVE    (configMAX_PRIORITIES-3)
 #define PRIORITY_TASK_SIX     (configMAX_PRIORITIES-2)
 #define PRIORITY_TASK_SEVEN   (configMAX_PRIORITIES-4)
-
 
 #endif // __PRIORITIES_H__

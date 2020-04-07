@@ -50,10 +50,10 @@ static void taskSeven( void *pvParameters )
          TASKLOGTIME( taskName, releases, wakeTick );
          doneTick = getTimeFromTimer();
          wcet = getTimeDifference( wakeTick, doneTick );
-//         xSemaphoreGive( pSemaphoreS7 );
       }
    }
-   TASKLOGEND( taskName, releases, wcet );
+   logTaskWcet( taskName, releases, wcet );
+//   TASKLOGEND( taskName, releases, wcet );
    vTaskDelete( NULL );
 }
 

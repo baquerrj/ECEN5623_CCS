@@ -61,12 +61,12 @@ static void taskOne( void *pvParameters )
          TASKLOGTIME( taskName, releases, wakeTick );
          doneTick = getTimeFromTimer();
          wcet = getTimeDifference( wakeTick, doneTick );
-
-//         xSemaphoreGive( pSemaphoreS1 );
       }
    }
 #endif
-   TASKLOGEND( taskName, releases, wcet );   vTaskDelete( NULL );
+   logTaskWcet( taskName, releases, wcet );
+//   TASKLOGEND( taskName, releases, (uint32_t)tmp ); // casting to uint32_t does a floor()
+   vTaskDelete( NULL );
 }
 
 uint32_t TaskOneInit( void )

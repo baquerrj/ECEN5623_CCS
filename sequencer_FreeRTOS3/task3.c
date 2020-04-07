@@ -62,7 +62,8 @@ static void taskThree( void *pvParameters )
 //         xSemaphoreGive( pSemaphoreS3 );
       }
    }
-   TASKLOGEND( taskName, releases, wcet );
+   logTaskWcet( taskName, releases, wcet );
+//   TASKLOGEND( taskName, releases, wcet );
    vTaskDelete( NULL );
 }
 

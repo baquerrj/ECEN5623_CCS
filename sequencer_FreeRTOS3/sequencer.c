@@ -226,6 +226,7 @@ int main( void )
    // Set the clocking to run at 80 MHz from the PLL.
    SysCtlClockSet( SYSCTL_SYSDIV_2_5 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ | SYSCTL_OSC_MAIN );
 
+   clockFrequency = ROM_SysCtlClockGet();
    // Initialize the UART and configure it for 115,200, 8-N-1 operation.
    ConfigureUART();
 #ifdef ISR_TIMING
